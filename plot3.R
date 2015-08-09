@@ -1,0 +1,20 @@
+if (!file.exists("household_power_consumption")) {
+  message("downloading data ...")
+  download.file("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip", 
+                "./energy.zip", mode='wb')
+  message("extracting data ...")
+  unzip("energy.zip", files=NULL, overwrite=TRUE, exdir=".", unzip="internal")
+}
+message("reading files ...")
+energy<- read.table("household_power_consumption.txt", header=FALSE, sep=";", quote="\"", dec=".", skip=grep("1/2/2007", readLines("household_power_consumption.txt")), nrows=2879, na.strings="NA", as.is=TRUE)
+colnames(energy)<- c("date", "time", "g_act_pow", "g_react_pow", "volt", "g_intense", "sub_met1", "sub_met2", "sub_met3")
+energy$date<- as.Date(energy$date, format="%d/%m/%Y")
+energy$datetime<- paste(energy$date, energy$time, sep=" ")
+energy$datetime<- strptime(energy$datetime, format="%Y-%m-%d %H:%M:%S")
+yrange<- range(c(energy$sub_met1, energy$sub_met2, energy$sub_met3))
+plot(energy$datetime, energy$sub_met1, type="l", col="black", main=NULL, xlab=" ", ylab="Energy sub-metering", ylim=yrange)
+par(new=T)
+plot(energy$datetime, energy$sub_met2, axes=F, type="l", col="red", main=NULL, xlab=" ", ylab=" ", ylim=yrange)
+par(new=T)
+plot(energy$datetime, energy$sub_met3, axes=F, type="l", col="blue", main=NULL, xlab=" ", ylab=" ", ylim=yrange)
+legend("topright", lty = 1, col = c("black", "red", "blue"), legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"))
